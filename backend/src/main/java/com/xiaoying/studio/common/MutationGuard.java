@@ -24,6 +24,6 @@ public class MutationGuard implements WebMvcConfigurer {
                 }
                 return true;
             }
-        }).addPathPatterns("/api/auth/**", "/api/assets/**", "/api/assets");
+        }).addPathPatterns("/api/auth/**", "/api/assets/**", "/api/assets", "/api/tasks", "/api/tasks/**");
     }
 }

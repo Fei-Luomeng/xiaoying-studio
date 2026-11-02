@@ -8,6 +8,7 @@ import { decodeAsset } from "@/lib/assets";
 import type { Template } from "@/lib/templates";
 import { createUploadState, slotPreview, uploadReducer, validateUploadFile } from "@/lib/upload-state";
 import type { UploadSlot } from "@/lib/upload-state";
+import { TaskSubmit } from "@/components/task-workspace";
 
 function UploadPreview({ src, name }: { src: string; name: string }) {
   const [failed, setFailed] = useState(false);
@@ -127,8 +128,8 @@ function UploadSlots({ template }: { template: Template }) {
         onRetry={() => { void choose(index, files.current.get(index) ?? "sample"); }} />)}
     </div>
     <p className="upload-summary" role="status">{uploading ? "图片正在上传，请稍候。" : `已准备 ${readyCount} / ${template.requiredImageCount} 张素材。`}</p>
-    <button type="button" className="button create-button" disabled title="制作功能暂未开放">制作功能准备中</button>
-    <p className="availability-note">图片上传成功后已保存在服务端。切换用户会清空本页选择。制作功能暂未开放。</p>
+    <TaskSubmit templateId={template.id} assetIds={slots.flatMap((slot) => slot.status === "ready" ? [slot.asset.id] : [])} ready={!uploading && readyCount === template.requiredImageCount} />
+    <p className="availability-note">素材和任务保存在服务端。切换用户会清空本页选择，已受理任务继续制作。</p>
   </>;
 }
 

@@ -125,3 +125,21 @@ h2 { font-size: 19px; margin: 0; font-weight: 600; }
 .upload-summary { color: #d0dbbc; font-size: 12px; line-height: 1.8; margin: 15px 0 0; }
 .create-button { width: 100%; margin-top: 16px; }
 @media (max-width: 600px) { .topbar { gap: 12px; flex-wrap: wrap; padding: 16px 0; } .topbar nav { margin-left: auto; } .user-controls { width: 100%; justify-content: flex-start; margin-left: 0; } .user-controls select { flex: 1; max-width: none; } }
+
+/* Stage 4: task acceptance and persisted stage inspection. */
+.simulation-controls { margin: 18px 0; border: 1px solid var(--border, #303137); border-radius: 12px; padding: 14px; }
+.simulation-controls summary { cursor: pointer; font-size: 14px; }
+.simulation-controls label { display: grid; gap: 7px; margin-top: 14px; font-size: 13px; }
+.simulation-controls input, .simulation-controls select { width: 100%; padding: 10px; border: 1px solid #414348; border-radius: 8px; background: #1d2024; color: #f2f4f5; font: inherit; }
+.task-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 16px; margin-top: 24px; align-items: start; }
+.task-card { min-width: 0; padding: 18px; border: 1px solid #34383b; border-radius: 16px; background: #15191b; }
+.task-card .section-heading { flex-wrap: wrap; gap: 8px; }
+.task-card time { font-size: 11px; color: #a5adb2; }
+.task-succeeded { border-color: #436b5c; }
+.task-failed { border-color: #80514f; }
+.task-steps { list-style: none; padding: 0; display: grid; gap: 10px; font-size: 12px; }
+.task-steps li { display: flex; justify-content: space-between; gap: 12px; color: #9ca7ab; }
+.task-steps [data-status="RUNNING"] { color: #c9f7c7; }
+.task-steps [data-status="FAILED"] { color: #ffaaa5; }
+.task-result { margin-top: 16px; }
+.task-result img { display: block; width: 100%; height: auto; max-height: 340px; object-fit: contain; border-radius: 10px; background: #0d1012; }
