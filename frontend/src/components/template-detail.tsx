@@ -7,6 +7,7 @@ import { ErrorNotice } from "@/components/feedback";
 import { TemplateCover } from "@/components/template-cover";
 import { decodeTemplate, formatFileSize } from "@/lib/templates";
 import { useResource } from "@/lib/use-resource";
+import { UploadPanel } from "@/components/upload-panel";
 
 function DetailContent({ templateId, onRetry }: { templateId: string; onRetry: () => void }) {
   const resource = useResource(`/api/templates/${encodeURIComponent(templateId)}`, decodeTemplate);
@@ -21,10 +22,7 @@ function DetailContent({ templateId, onRetry }: { templateId: string; onRetry: (
         <section className="requirements" aria-labelledby="requirements-title">
           <h2 id="requirements-title">准备你的素材</h2>
           <dl><div><dt>图片数量</dt><dd>{template.requiredImageCount} 张</dd></div><div><dt>支持格式</dt><dd>{template.acceptedMimeTypes.map((type) => type.replace("image/", "").toUpperCase()).join(" / ")}</dd></div><div><dt>单张大小</dt><dd>不超过 {formatFileSize(template.maxFileSizeBytes)}</dd></div></dl>
-          <div className="upload-placeholders" aria-label={`此模板需要 ${template.requiredImageCount} 张图片`}>
-            {Array.from({ length: template.requiredImageCount }, (_, index) => <div className="upload-placeholder" key={index}><span aria-hidden="true">＋</span><span>图片 {index + 1}</span></div>)}
-          </div>
-          <p className="availability-note" role="status">当前支持浏览模板，图片上传与制作暂未开放。</p>
+          <UploadPanel template={template} />
         </section>
       </section>
       <section className="records-panel" aria-labelledby="records-title">

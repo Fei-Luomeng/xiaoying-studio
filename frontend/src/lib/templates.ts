@@ -14,7 +14,7 @@ function isTemplate(value: unknown): value is Template {
   const row = value as Record<string, unknown>;
   return ["id", "title", "category", "description", "coverUrl"].every((key) => typeof row[key] === "string") &&
     typeof row.coverUrl === "string" && row.coverUrl.startsWith("/demo/") &&
-    Number.isInteger(row.requiredImageCount) && (row.requiredImageCount as number) > 0 &&
+    Number.isInteger(row.requiredImageCount) && (row.requiredImageCount as number) > 0 && (row.requiredImageCount as number) <= 6 &&
     typeof row.maxFileSizeBytes === "number" && row.maxFileSizeBytes > 0 &&
     Array.isArray(row.acceptedMimeTypes) && row.acceptedMimeTypes.every((type) => typeof type === "string");
 }

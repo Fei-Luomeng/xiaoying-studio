@@ -2,10 +2,11 @@
   "name": "xiaoying-studio-frontend",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=22 <23" },
+  "engines": { "node": ">=22.18 <23" },
   "scripts": {
     "dev": "node scripts/next.mjs dev --hostname 0.0.0.0",
     "lint": "eslint . --max-warnings=0",
+    "test": "node --experimental-default-type=module --test tests/*.test.mjs",
     "typecheck": "node scripts/next.mjs typegen && tsc --noEmit",
     "build": "node scripts/next.mjs build",
     "start": "node scripts/next.mjs start --hostname 0.0.0.0"

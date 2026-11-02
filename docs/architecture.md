@@ -7,8 +7,8 @@
 ## 阶段
 
 1. 工程骨架：Docker、真实数据库连通性、依赖锁定、CI 和 README。
-2. 模板浏览：模板接口、本地封面、列表和详情（当前阶段）。
-3. 身份与素材：预置演示用户、服务端会话、素材上传及校验。
+2. 模板浏览：模板接口、本地封面、列表和详情。
+3. 身份与素材（当前阶段）：预置演示用户、服务端会话、素材上传及校验。
 4. 任务执行：持久化任务、事务提交后调度、有界线程池、三阶段边界、失败中断和配置快照。
 5. 前端异步状态：上传与提交分离、按用户/任务隔离缓存、有限轮询、取消旧请求、刷新恢复和历史预览。
 6. 验证完善：核心测试、可重复的演示步骤、小屏与可访问性、容器全链路。
@@ -21,13 +21,17 @@
 - `GET /api/templates/categories`、`GET /api/templates?category=...`、`GET /api/templates/{id}`
 - Java 本地封面静态资源 `/demo/*.svg`
 
-## 计划接口（未实现）
+## 已编写的身份与素材接口
 
-- 演示会话创建/切换、当前用户查询
-- `POST /api/assets`（multipart，返回服务端素材 ID）
+- `GET /api/auth/demo-users`、`POST /api/auth/session`、`GET /api/auth/me`、`DELETE /api/auth/session`
+- `POST /api/assets`（multipart，返回服务端素材 ID）、`GET /api/assets`
+- `GET /api/assets/{id}`、`GET /api/assets/{id}/content`（按会话归属校验）
+- 两张公开本地示例 PNG：`/demo/sample-1.png`、`/demo/sample-2.png`
+
+## 计划接口（未实现）
 - `POST /api/tasks`（模板 ID、按顺序的素材 ID、开发模拟参数）
 - `GET /api/tasks`、`GET /api/tasks/{id}`（只查询当前用户）
-- 服务端素材/结果读取接口
+- 任务结果读取接口
 
 ## 必须保持的行为
 

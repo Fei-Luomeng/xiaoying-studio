@@ -16,6 +16,11 @@ spring:
 server:
   port: 8080
   shutdown: graceful
+  tomcat:
+    max-swallow-size: 12MB
+studio:
+  storage-root: ${STORAGE_ROOT:./storage}
+  cookie-secure: ${COOKIE_SECURE:false}
 management:
   endpoints:
     web:

@@ -26,6 +26,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       - run: npm run typecheck
       - run: npm run build
         env:
@@ -59,8 +60,9 @@ jobs:
         env:
           MYSQL_CONTAINER: ${{ job.services.mysql.id }}
         run: |
-          docker exec -i -e MYSQL_PWD=root_demo "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot xiaoying < database/init/001-schema.sql
-          docker exec -i -e MYSQL_PWD=root_demo "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot xiaoying < database/init/002-seed.sql
+          for script in database/init/*.sql; do
+            docker exec -i -e MYSQL_PWD=root_demo "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot xiaoying < "$script"
+          done
       - name: Java tests and package
         working-directory: backend
         env:

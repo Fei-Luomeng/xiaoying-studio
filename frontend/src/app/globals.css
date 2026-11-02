@@ -96,3 +96,32 @@ h2 { font-size: 19px; margin: 0; font-weight: 600; }
 @media (max-width: 900px) { .shell { padding: 0 28px; } .topbar { gap: 32px; } .header-note { display: none; } .detail-grid { grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); } .detail-panel, .records-panel { padding: 22px; } }
 @media (max-width: 760px) { .shell { padding: 0 20px; } .topbar { min-height: 80px; justify-content: space-between; gap: 20px; } .explore-main { padding-top: 26px; } .intro-section { padding: 28px 24px; } .eyebrow { font-size: 9px; } h1 { font-size: 30px; } h1 span { display: block; } .intro { font-size: 12px; } .template-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; } .category-chip { padding: 9px 14px; font-size: 12px; } .cover-caption { padding: 45px 14px 17px; } .cover-caption h2 { font-size: 17px; } .card-arrow { display: none; } .image-count { right: 10px; top: 10px; font-size: 10px; } .detail-grid { grid-template-columns: 1fr; } .records-empty { min-height: 300px; } .site-footer { font-size: 10px; } .section-heading .small { font-size: 10px; } .detail-loading { flex-direction: column; } .detail-loading .skeleton-card { width: 100%; max-width: 360px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+.user-controls { margin-left: auto; display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.user-controls select { min-height: 40px; max-width: 210px; border: 1px solid #424635; border-radius: 10px; padding: 8px 12px; background: #1c2118; color: #d9e6c9; font: inherit; font-size: 12px; }
+.user-controls select:disabled { opacity: .6; }
+.identity-error { max-width: 250px; color: #ffb0aa; }
+.identity-notice { padding: 20px; margin-top: 18px; border: 1px dashed #4d5540; border-radius: 12px; background: #d5f77d08; }
+.identity-notice p { color: #ced7be; font-size: 13px; line-height: 1.8; margin: 0 0 8px; }
+.identity-notice small { color: var(--muted); font-size: 11px; }
+.upload-owner { font-size: 11px; color: var(--muted); line-height: 1.8; }
+.upload-slot { min-width: 0; border-radius: 12px; }
+.upload-slot:focus-within { outline: 2px solid var(--accent); outline-offset: 4px; }
+.upload-target { position: relative; min-height: 145px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; border: 1px dashed #505565; border-radius: 12px; overflow: hidden; background: #1b1d26; color: #b8bbca; font-size: 12px; cursor: pointer; }
+.upload-target:hover { border-color: var(--accent); }
+.upload-plus { font-size: 28px; color: var(--accent); }
+.upload-target img { object-fit: contain; }
+.upload-overlay { position: absolute; inset: 0; display: grid; place-items: center; background: #080b13a6; color: white; font-size: 12px; }
+.upload-ready { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #293315; border-radius: 15px; padding: 4px 7px; font-size: 10px; }
+.upload-controls { display: flex; align-items: center; justify-content: space-between; min-height: 40px; gap: 10px; font-size: 11px; }
+.upload-replace { display: inline-flex; min-height: 40px; align-items: center; color: var(--accent); cursor: pointer; }
+.upload-remove, .sample-button, .upload-error button { border: 0; background: none; color: var(--muted); padding: 8px 0; font-size: 11px; min-height: 36px; }
+.upload-remove:hover { color: #ffb0aa; }
+.sample-button { color: #c2cbaa; text-decoration: underline; text-underline-offset: 4px; padding-top: 0; }
+.upload-filename { font-size: 10px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 4px 0 8px; }
+.upload-error { color: #ffb0aa; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; }
+.upload-error button { display: block; color: var(--accent); text-decoration: underline; }
+.upload-preview-fallback { color: var(--muted); padding: 15px; font-size: 11px; line-height: 1.8; text-align: center; }
+.upload-summary { color: #d0dbbc; font-size: 12px; line-height: 1.8; margin: 15px 0 0; }
+.create-button { width: 100%; margin-top: 16px; }
+@media (max-width: 600px) { .topbar { gap: 12px; flex-wrap: wrap; padding: 16px 0; } .topbar nav { margin-left: auto; } .user-controls { width: 100%; justify-content: flex-start; margin-left: 0; } .user-controls select { flex: 1; max-width: none; } }

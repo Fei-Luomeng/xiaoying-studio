@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UserSwitcher } from "@/components/user-switcher";
 
 export function SiteHeader() {
   return (
@@ -8,7 +9,7 @@ export function SiteHeader() {
         <span>拾影<span className="brand-caption">STUDIO</span></span>
       </Link>
       <nav aria-label="主导航"><Link className="nav-link" href="/">探索模板</Link></nav>
-      <span className="header-note">让每一张照片，都有新故事。</span>
+      <UserSwitcher />
     </header>
   );
 }
