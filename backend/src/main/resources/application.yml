@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: xiaoying-studio
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3307/xiaoying?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:xiaoying}
+    password: ${DB_PASSWORD:xiaoying_demo}
+    hikari:
+      connection-timeout: 5000
+  jackson:
+    time-zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 12MB
+server:
+  port: 8080
+  shutdown: graceful
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
