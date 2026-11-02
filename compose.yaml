@@ -2,7 +2,7 @@ name: xiaoying-studio
 services:
   mysql:
     image: mysql:8.4
-    environment:
+    environment: &mysql-environment
       MYSQL_DATABASE: ${MYSQL_DATABASE:-xiaoying}
       MYSQL_USER: ${MYSQL_USER:-xiaoying}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-xiaoying_demo}
@@ -13,7 +13,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d:ro
-    healthcheck:
+    healthcheck: &mysql-healthcheck
       test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql --protocol=TCP -h 127.0.0.1 -u$$MYSQL_USER $$MYSQL_DATABASE -e 'SELECT COUNT(*) FROM templates' > /dev/null 2>&1"]
       interval: 5s
       timeout: 5s
@@ -52,10 +52,23 @@ services:
     build:
       context: ./backend
       target: test
-    environment: *backend-environment
+    environment:
+      <<: *backend-environment
+      DB_URL: jdbc:mysql://mysql-check:3306/${MYSQL_DATABASE:-xiaoying}?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&characterEncoding=UTF-8
     depends_on:
-      mysql:
+      mysql-check:
         condition: service_healthy
+
+  # Test-only database: no published ports or shared application data volume.
+  mysql-check:
+    profiles: ["checks"]
+    image: mysql:8.4
+    environment: *mysql-environment
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /var/lib/mysql:size=512m
+    healthcheck: *mysql-healthcheck
 
 volumes:
   mysql-data:

@@ -143,3 +143,17 @@ h2 { font-size: 19px; margin: 0; font-weight: 600; }
 .task-steps [data-status="FAILED"] { color: #ffaaa5; }
 .task-result { margin-top: 16px; }
 .task-result img { display: block; width: 100%; height: auto; max-height: 340px; object-fit: contain; border-radius: 10px; background: #0d1012; }
+
+/* Stage 5: personal history and recoverable query feedback. */
+.topbar nav { display: flex; gap: 22px; white-space: nowrap; }
+.history-main { padding: 40px 0 56px; }
+.history-intro { margin-bottom: 30px; }
+.history-intro h1 { margin: 12px 0; }
+.history-intro > p { line-height: 1.8; font-size: 14px; }
+.history-intro > .small { font-size: 12px; }
+.query-warning { border: 1px solid #716439; color: #eddd9f; padding: 12px; border-radius: 10px; font-size: 12px; margin: 12px 0; line-height: 1.7; }
+.query-warning p { margin: 0 0 6px; }
+.task-template-link, .task-history-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; color: var(--accent); }
+.task-history-link { align-self: flex-start; margin: 16px 0; }
+.task-template-link { margin-top: 10px; }
+@media (max-width: 600px) { .topbar nav { gap: 16px; } .history-main { padding-top: 26px; } }

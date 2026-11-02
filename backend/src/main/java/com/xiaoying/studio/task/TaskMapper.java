@@ -14,7 +14,9 @@ public interface TaskMapper {
     void addStep(@Param("id") String id, @Param("stage") Stage stage, @Param("position") int position);
     @Select("SELECT * FROM tasks WHERE id=#{id}")
     TaskRow find(String id);
-    @Select("<script>SELECT * FROM tasks WHERE user_id=#{userId} <if test='templateId != null'>AND template_id=#{templateId}</if> ORDER BY created_at DESC,id LIMIT 100</script>")
+    @Select("<script>(SELECT * FROM tasks WHERE user_id=#{userId} <if test='templateId != null'>AND template_id=#{templateId}</if> ORDER BY created_at DESC,id LIMIT 100) "
+            + "UNION (SELECT * FROM tasks WHERE user_id=#{userId} <if test='templateId != null'>AND template_id=#{templateId}</if> AND status IN ('QUEUED','RUNNING')) "
+            + "ORDER BY created_at DESC,id</script>")
     List<TaskRow> list(@Param("userId") String userId, @Param("templateId") String templateId);
     @Select("SELECT asset_id FROM task_assets WHERE task_id=#{id} ORDER BY position")
     List<String> assets(String id);

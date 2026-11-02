@@ -169,6 +169,26 @@ class TaskIntegrationTest {
         assertThat(task.get("stage").asText()).isEqualTo("MATERIAL_CHECK");
         assertThat(task.get("steps").get(1).get("startedAt").isNull()).isTrue();
     }
+    @Test void historyIncludesOlderPendingJobsBeyondTheRecentHundredButStillFiltersByOwnerAndTemplate() throws Exception {
+        String pending=UUID.randomUUID().toString(), oldDone=UUID.randomUUID().toString();
+        for (int i=0;i<103;i++) {
+            String id=i==0?pending:i==1?oldDone:UUID.randomUUID().toString();
+            tasks.add(id);
+            jdbc.update("INSERT INTO tasks (id,user_id,template_id,status,stage,step_delay_ms,created_at,updated_at) VALUES (?,?,'pet-portrait',?,?,0,?,?)",
+                    id,"demo-chen",i==0?"QUEUED":"SUCCEEDED",i==0?null:"FINALIZE",i<2?"2000-01-01 00:00:00":"2010-01-01 00:00:00","2010-01-01 00:00:00");
+            for(Stage stage:Stage.values()) mapper.addStep(id,stage,stage.ordinal());
+        }
+        for(String path:List.of("/api/tasks","/api/tasks?templateId=pet-portrait")) {
+            var history=http.exchange(path,HttpMethod.GET,new HttpEntity<>(headers(owner)),JsonNode.class).getBody();
+            assertThat(history.size()).isGreaterThanOrEqualTo(101);
+            assertThat(history.toString()).contains(pending).doesNotContain(oldDone);
+            assertThat(history).extracting(item->item.get("id").asText()).doesNotHaveDuplicates();
+        }
+        var differentTemplate=http.exchange("/api/tasks?templateId=travel-postcard",HttpMethod.GET,new HttpEntity<>(headers(owner)),JsonNode.class).getBody();
+        assertThat(differentTemplate.toString()).doesNotContain(pending);
+        var other=http.exchange("/api/tasks",HttpMethod.GET,new HttpEntity<>(headers(loginAs("demo-lin"))),JsonNode.class).getBody();
+        assertThat(other.toString()).doesNotContain(pending);
+    }
     private HttpHeaders headers(String cookie) {
         var h=new HttpHeaders(); h.set("X-Studio-Request","1"); if(cookie!=null) h.set(HttpHeaders.COOKIE,cookie); return h;
     }
