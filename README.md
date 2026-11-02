@@ -109,6 +109,8 @@ npm run build
 
 `typecheck` 会先执行 `next typegen` 生成路由类型，再执行 `tsc --noEmit`，不依赖此前已运行过开发服务器或构建。
 
+本机 `dev`、`typecheck`、`build`、`start` 统一经过 `frontend/scripts/next.mjs`，在加载 Next.js CLI 前设置 `NEXT_TELEMETRY_DISABLED=1`，避免遥测尝试写入宿主机偏好目录。无需手动追加环境变量，不更改系统全局设置，也没有新增依赖；Docker 与 CI 保留相同的环境设置。命令和 `npm run dev -- --port ...` 等参数转发方式不变。
+
 Java 测试和构建可完全在容器中执行，不需要宿主机安装 Java/Maven：
 
 ```bash
@@ -117,7 +119,7 @@ docker compose --profile checks run --build --rm backend-check
 
 也可在 Java 21 / Maven 3.9 环境执行 `cd backend && mvn verify`，先启动 MySQL。默认连接 `localhost:3307/xiaoying`。可通过 `DB_URL`、`DB_USERNAME`、`DB_PASSWORD` 覆盖。当前集成测试使用真实 MySQL，验证 HTTP → Java → MyBatis → 种子表及健康检查。
 
-CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以及使用真实 MySQL 的 Java 测试与构建。用户提供的 Actions 截图显示，第一笔工程提交 `22ec58b` 的 CI 已通过；这不代表后续新增代码或完整 Compose 已验证。核心业务测试在对应功能实现时加入，不用基础连通性测试代替业务测试。
+CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以及使用真实 MySQL 的 Java 测试与构建。用户提供的 Actions 截图确认，第一阶段提交 `22ec58b` 与第二阶段提交 `152bc97` 均通过；第二次 CI 耗时 1 分 10 秒。CI 验证对应提交中的检查，不等同于全部业务或完整浏览器验收。核心业务测试在对应功能实现时加入，不用基础连通性测试代替业务测试。
 
 ## 当前接口
 
@@ -166,6 +168,7 @@ CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以
 - 本轮本机验证：前端 lint、类型检查、生产构建通过；容器内 9 个 Java 集成测试及 `mvn verify` 通过；前端、后端、MySQL 三个独立容器均健康。正式 3000 端口的页面、分类、列表、分类筛选、详情、本地封面和 404 已完成 HTTP 联调检查。
 - 当前详情里的素材位为静态占位，明确说明上传与制作尚未开放，作品区域不伪造历史记录。
 - 浏览器 UI 使用临时 fixture 做过布局与交互检查；正式 Docker 网站的浏览器预览因工具会话错误未完成，不能把 HTTP 联调当作完整浏览器端到端验收。
+- 第二阶段收尾已固定本机关闭遥测的入口，普通 `npm run build` 和更新后的 Docker 构建均通过。临时 3100 / 18080 服务已停止并验证端口关闭，正式入口为 3000。正式浏览器检查再次尝试时，内置预览未能打开、本机 Chrome 访问未获授权，仍按未验证记录。
 - 待完成：可上传示例文件、素材上传、用户会话、后台任务、轮询、历史结果、核心异步行为测试与最终验收。
 - 实际开发投入按开发阶段记录；尚未统计用户自行操作、阅读或后续开发的时间，不将自动生成时间等同于人工投入。
 

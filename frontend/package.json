@@ -4,11 +4,11 @@
   "private": true,
   "engines": { "node": ">=22 <23" },
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0",
+    "dev": "node scripts/next.mjs dev --hostname 0.0.0.0",
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "next typegen && tsc --noEmit",
-    "build": "next build",
-    "start": "next start --hostname 0.0.0.0"
+    "typecheck": "node scripts/next.mjs typegen && tsc --noEmit",
+    "build": "node scripts/next.mjs build",
+    "start": "node scripts/next.mjs start --hostname 0.0.0.0"
   },
   "dependencies": {
     "next": "^16.2.0",
