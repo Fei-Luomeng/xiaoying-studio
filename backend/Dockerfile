@@ -1,22 +1,23 @@
-FROM maven:3.9-eclipse-temurin-21 AS dependencies
+FROM maven:3.9-eclipse-temurin-21 AS source
 WORKDIR /workspace
 COPY pom.xml ./
-RUN --mount=type=cache,target=/root/.m2 mvn --batch-mode dependency:go-offline
-
-FROM dependencies AS source
 COPY src ./src
 
 FROM source AS test
-CMD ["mvn", "--batch-mode", "verify"]
+# Resolve only the lifecycle we use, and retain the cache in the test image.
+# A BuildKit cache mount alone is not available to the running test container.
+RUN --mount=type=cache,target=/root/.m2,sharing=locked \
+    mvn --batch-mode -DskipTests test-compile \
+    && cp -a /root/.m2/repository /opt/maven-repository
+CMD ["mvn", "--batch-mode", "-Dmaven.repo.local=/opt/maven-repository", "verify"]
 
 FROM source AS build
-RUN --mount=type=cache,target=/root/.m2 mvn --batch-mode -DskipTests package
+RUN --mount=type=cache,target=/root/.m2,sharing=locked mvn --batch-mode -DskipTests package
 
 FROM eclipse-temurin:21-jre-jammy AS runtime
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && groupadd --system studio && useradd --system --gid studio studio \
+# The official Temurin image already contains curl; no extra apt downloads.
+RUN groupadd --system studio && useradd --system --gid studio studio \
     && mkdir /app/storage && chown studio:studio /app/storage
 COPY --from=build /workspace/target/studio-backend-*.jar /app/app.jar
 USER studio

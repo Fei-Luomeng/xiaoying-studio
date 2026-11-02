@@ -1,4 +1,6 @@
 -- Stored times use UTC; the frontend will format them in the viewer's locale.
+SET NAMES utf8mb4;
+
 CREATE TABLE templates (
     id VARCHAR(64) PRIMARY KEY,
     title VARCHAR(128) NOT NULL,

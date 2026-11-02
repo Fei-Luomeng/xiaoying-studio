@@ -4,7 +4,7 @@
 
 源码仓库：[Fei-Luomeng/xiaoying-studio](https://github.com/Fei-Luomeng/xiaoying-studio)。开发过程按阶段提交，当前不是最终验收版本。
 
-**当前阶段：工程骨架与连通性验证，尚未完成业务功能，不能作为最终交付。** 本文随开发同步更新，未验证的内容明确标记。
+**当前阶段：第 2 / 7 阶段，模板分类、列表与详情。上传、身份和异步制作尚未完成，不能作为最终交付。** 本文随开发同步更新，未验证的内容明确标记。
 
 ## 技术与职责
 
@@ -55,7 +55,36 @@ docker compose down
 
 `down` 保留数据卷。MySQL 仅在空数据卷上执行 `database/init/`；修改初始化脚本不会自动迁移现有数据库。开发期如确需重新初始化，可执行 `docker compose down -v`，**该命令会删除此项目的数据库和素材数据卷**。
 
-当前本机验证遇到 Docker Hub 镜像认证请求超时（`failed to authorize: DeadlineExceeded`），后端尚未进入编译。可先在终端执行 `docker pull maven:3.9-eclipse-temurin-21` 检查 Docker 的镜像访问是否可用；恢复访问后再运行 Compose 构建与测试。前端本机检查已通过，具体结果见开发日志。
+所有 SQL 显式设置 `SET NAMES utf8mb4`，避免命令行客户端的默认字符集把中文写成乱码。模板种子可幂等重导入：只覆盖这 6 个演示模板 ID 的字段，其他记录保留。对已启动的数据库执行：
+
+```bash
+docker compose exec -T mysql sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" mysql --default-character-set=utf8mb4 -u"$MYSQL_USER" "$MYSQL_DATABASE"' < database/init/002-seed.sql
+```
+
+首次启动需要拉取镜像及构建依赖，耗时受网络影响；之前本机遇到过 Docker Hub 认证超时。目前的实际验证结果以开发日志为准。
+
+Compose 项目名固定为 `xiaoying-studio`，独立创建以下容器，不复用其他项目的服务：
+
+| 服务 | 默认容器名 | 用途 |
+| --- | --- | --- |
+| frontend | `xiaoying-studio-frontend-1` | Next.js，入口端口 3000 |
+| backend | `xiaoying-studio-backend-1` | Java API，入口端口 8080 |
+| mysql | `xiaoying-studio-mysql-1` | MySQL，宿主机映射端口 3307 |
+
+在 Docker Desktop 中可按 `xiaoying-studio` 项目管理。两个命名数据卷也带此前缀。日常操作均在项目根目录执行：
+
+```bash
+# 第一次运行或代码更新后重建
+docker compose up --build -d
+# 已有镜像与容器时启动（不重新构建）
+docker compose up -d
+# 停止，保留容器和数据
+docker compose stop
+# 查看状态
+docker compose ps
+```
+
+`backend-check` 只在显式执行测试 profile 时临时创建，不属于日常运行的三个容器。
 
 ## 开发与检查
 
@@ -88,7 +117,7 @@ docker compose --profile checks run --build --rm backend-check
 
 也可在 Java 21 / Maven 3.9 环境执行 `cd backend && mvn verify`，先启动 MySQL。默认连接 `localhost:3307/xiaoying`。可通过 `DB_URL`、`DB_USERNAME`、`DB_PASSWORD` 覆盖。当前集成测试使用真实 MySQL，验证 HTTP → Java → MyBatis → 种子表及健康检查。
 
-CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以及使用真实 MySQL 的 Java 测试与构建；尚未在 GitHub 实际运行。核心业务测试在对应功能实现时加入，不用基础连通性测试代替业务测试。
+CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以及使用真实 MySQL 的 Java 测试与构建。用户提供的 Actions 截图显示，第一笔工程提交 `22ec58b` 的 CI 已通过；这不代表后续新增代码或完整 Compose 已验证。核心业务测试在对应功能实现时加入，不用基础连通性测试代替业务测试。
 
 ## 当前接口
 
@@ -100,13 +129,24 @@ CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以
 
 `GET /actuator/health`：Spring Boot 的应用与数据库健康状态，正常返回 `{"status":"UP"}`。
 
-其余业务接口尚未实现，计划见 [架构与实施步骤](docs/architecture.md)。
+模板接口见下表，完整示例与验证步骤见 [模板浏览验收](docs/template-browsing.md)：
+
+| 方法与路径 | 请求 | 成功响应 |
+| --- | --- | --- |
+| `GET /api/templates/categories` | 无 | 分类字符串数组，按种子排序 |
+| `GET /api/templates` | 可选 `category`，空白表示全部 | 模板对象数组；无匹配返回 `[]` |
+| `GET /api/templates/{id}` | 模板 ID | 单个模板；不存在返回 404 |
+| `GET /demo/{filename}.svg` | 已提供的封面文件名 | 随后端部署的本地 SVG 图片 |
+
+模板字段为 `id`、`title`、`category`、`description`、`coverUrl`、`requiredImageCount`、`acceptedMimeTypes`（字符串数组）、`maxFileSizeBytes`（字节数）。数据库 JSON 存储格式不会直接暴露为字符串。
+
+请求错误采用 Problem Details，例如 `{"status":404,"detail":"模板不存在或已下架，请返回列表选择其他模板。"}`；数据库请求失败返回 503 和通用说明，不向浏览器暴露数据库细节。其他业务接口仍未实现，计划见 [架构与实施步骤](docs/architecture.md)。
 
 ## 模板、素材与身份
 
-已提供 6 条模板种子记录，包含 3 个分类以及 1 / 2 张素材要求。封面地址已在种子中约定，**对应图片文件尚未加入，当前页面不展示这些封面**。
+已提供 6 条模板种子记录，包含 3 个分类以及 1 / 2 张素材要求。已提供 6 张对应的原创 SVG 插画封面，位于 `backend/src/main/resources/static/demo/`，由 Java 静态资源服务读取，Next.js 代理 `/demo/*`。不依赖远程图片服务。SVG 用于展示，后续上传仍按模板规则仅接受 JPEG / PNG。
 
-计划随源码提供本地示例素材，运行时不依赖付费或内部服务。上传文件与结果文件保存至后端数据卷。身份计划采用预置演示用户与 Java 服务端会话，所有个人记录按会话用户隔离。上述素材上传、身份及历史查询当前均未实现。
+后续会随源码提供可上传的 JPEG / PNG 示例素材，运行时不依赖付费或内部服务。上传文件与结果文件保存至后端数据卷。身份计划采用预置演示用户与 Java 服务端会话，所有个人记录按会话用户隔离。上述素材上传、身份及历史查询当前均未实现。
 
 ## 任务与演示计划
 
@@ -119,9 +159,14 @@ CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以
 ## 完成情况与验证
 
 - 工程文件：前后端骨架、MySQL 初始化、Compose、配置示例与 CI 已编写；Compose 配置检查通过。运行验证结果见 [开发记录](docs/development-log.md)。
-- 前端依赖已安装并生成锁文件；基础页面的 lint、TypeScript 检查和生产构建均已通过。详细记录见开发日志。
-- 待完成：后端实际构建与容器运行验证、模板业务接口与页面、真实示例文件、上传、用户会话、后台任务、轮询、历史结果、核心业务测试、完整 CI 验证与最终验收。
-- 当前首页仅为服务连通性验证页，不是最终模板列表。
+- 第一阶段工程骨架已提交，用户确认推送成功并提供 CI 通过截图。
+- 已编写模板分类、列表、详情接口及数据库筛选；首页为模板列表，支持分类切换、进入详情、加载与空数据、重试和缺失模板反馈。详情展示封面与素材数量、格式、大小要求。
+- 请求组件在分类切换、重试和离开页面时取消旧请求，并防止旧响应写回已卸载的视图；请求超时有可恢复的反馈。图片读取失败有替代展示。
+- 新增 Java 集成测试覆盖分类、列表排序、筛选、未知分类、参数绑定、素材要求、404 / 400 和本地封面读取。当前阶段执行结果见开发日志。
+- 本轮本机验证：前端 lint、类型检查、生产构建通过；容器内 9 个 Java 集成测试及 `mvn verify` 通过；前端、后端、MySQL 三个独立容器均健康。正式 3000 端口的页面、分类、列表、分类筛选、详情、本地封面和 404 已完成 HTTP 联调检查。
+- 当前详情里的素材位为静态占位，明确说明上传与制作尚未开放，作品区域不伪造历史记录。
+- 浏览器 UI 使用临时 fixture 做过布局与交互检查；正式 Docker 网站的浏览器预览因工具会话错误未完成，不能把 HTTP 联调当作完整浏览器端到端验收。
+- 待完成：可上传示例文件、素材上传、用户会话、后台任务、轮询、历史结果、核心异步行为测试与最终验收。
 - 实际开发投入按开发阶段记录；尚未统计用户自行操作、阅读或后续开发的时间，不将自动生成时间等同于人工投入。
 
 ## 部署与回滚
@@ -136,6 +181,8 @@ CI 已配置在 push / pull request 时检查前端 lint、类型和构建，以
 
 已明确的修正例子：初始准备采用全容器开发，结合本机已有 Node.js 的情况，调整为前端可本机开发、Java/MySQL 使用容器；保留完整 Compose 作为最终验收入口。
 
-当前工程手工搭建，使用 Next.js、React、Spring Boot、MyBatis 等开源依赖及其官方 API，没有复制第三方业务项目。最终示例素材的来源、许可和复用范围将在加入时登记。不提交私人聊天记录、账号或真实凭据。
+代码验证的具体例子：第二阶段 UI 检查正常，但真实 Java / MySQL 测试发现中文分类乱码。通过查询 `HEX(category)` 和 `CHAR_LENGTH(category)`，确认 4 个汉字被存成 12 个乱码字符，定位到种子导入时的客户端字符集。随后在 SQL 和 CI 导入命令中明确 UTF-8、将种子改为可幂等导入，修复现有演示记录，并重跑全部 9 个集成测试与 Java 构建，通过后才记录为修复完成。
+
+当前工程手工搭建，使用 Next.js、React、Spring Boot、MyBatis 等开源依赖及其官方 API，没有复制第三方业务项目。6 张模板 SVG 封面由本项目编写矢量图形代码生成，无外部图片引用、字体或第三方素材依赖，随源码提供，可用于本项目演示。后续新增素材的来源、许可和复用范围在加入时登记。不提交私人聊天记录、账号或真实凭据。
 
 交付接受源码压缩包或可读取仓库。若使用仓库交付，最终补充验收 commit；当前尚无交付 commit。

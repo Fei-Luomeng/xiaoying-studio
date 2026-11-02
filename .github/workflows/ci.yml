@@ -59,8 +59,8 @@ jobs:
         env:
           MYSQL_CONTAINER: ${{ job.services.mysql.id }}
         run: |
-          docker exec -i -e MYSQL_PWD=root_demo "$MYSQL_CONTAINER" mysql -uroot xiaoying < database/init/001-schema.sql
-          docker exec -i -e MYSQL_PWD=root_demo "$MYSQL_CONTAINER" mysql -uroot xiaoying < database/init/002-seed.sql
+          docker exec -i -e MYSQL_PWD=root_demo "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot xiaoying < database/init/001-schema.sql
+          docker exec -i -e MYSQL_PWD=root_demo "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot xiaoying < database/init/002-seed.sql
       - name: Java tests and package
         working-directory: backend
         env:

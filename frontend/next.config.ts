@@ -6,7 +6,10 @@ const config: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${backendOrigin}/api/:path*` }];
+    return [
+      { source: "/api/:path*", destination: `${backendOrigin}/api/:path*` },
+      { source: "/demo/:path*", destination: `${backendOrigin}/demo/:path*` },
+    ];
   },
 };
 

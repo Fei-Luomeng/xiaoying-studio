@@ -2,7 +2,7 @@ FROM node:22-bookworm-slim AS dependencies
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --prefer-offline --no-audit --no-fund
 
 FROM dependencies AS build
 ARG BACKEND_ORIGIN=http://backend:8080
