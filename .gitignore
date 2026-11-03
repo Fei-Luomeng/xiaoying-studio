@@ -14,3 +14,5 @@ target/
 storage/
 *.log
 *.cookies
+release/
+backups/
