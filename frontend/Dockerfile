@@ -4,6 +4,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --prefer-offline --no-audit --no-fund
 
+FROM dependencies AS check
+COPY . .
+CMD ["sh", "-c", "npm run lint && npm test && npm run typecheck && npm run build"]
+
 FROM dependencies AS build
 ARG BACKEND_ORIGIN=http://backend:8080
 ENV BACKEND_ORIGIN=$BACKEND_ORIGIN
