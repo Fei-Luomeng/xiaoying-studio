@@ -100,7 +100,9 @@ test('failed history refresh retains already known results and pending stages',a
 
 test('switching users aborts old history and ignores even a response that disregards cancellation',async()=>{
   const late=deferred(), first=harness({history:()=>late.promise});
-  first.feed.start(); first.feed.stop(); const changes=[]; first.feed.subscribe(()=>changes.push(true));
+  first.feed.start(); assert.equal(first.feed.getSnapshot().historyLoading,true);
+  first.feed.stop(); assert.equal(first.feed.getSnapshot().historyLoading,false);
+  const changes=[]; first.feed.subscribe(()=>changes.push(true));
   const second=harness({ownerId:'demo-lin',history:async()=>[task('lin','SUCCEEDED',null,'demo-lin')]});
   second.feed.start(); await flush(); late.resolve([task('chen','SUCCEEDED')]); await flush();
   assert.equal(first.signals[0].aborted,true); assert.equal(first.time.count(),0); assert.equal(changes.length,0);
@@ -108,11 +110,24 @@ test('switching users aborts old history and ignores even a response that disreg
 });
 
 test('page cleanup cancels an active poll and timers; late poll cannot overwrite a restarted scope',async()=>{
-  const late=deferred(); let loaded=0;
-  const h=harness({history:async()=>[task('one',++loaded===1?'RUNNING':'SUCCEEDED')],individual:()=>late.promise});
-  h.feed.start(); await flush(); await h.time.advance(2000); h.feed.stop();
+  const late=deferred(), current=deferred(); let queries=0;
+  const h=harness({history:async()=>[task('one','RUNNING')],individual:()=>++queries===1?late.promise:current.promise});
+  h.feed.start(); await flush(); await h.time.advance(2000);
+  assert.equal(h.feed.getSnapshot().polling,true);
+  const before=h.feed.getSnapshot().tasks;
+  h.feed.stop();
+  assert.equal(h.feed.getSnapshot().polling,false);
+  assert.equal(h.feed.getSnapshot().historyLoading,false);
+  assert.equal(h.feed.getSnapshot().tasks,before);
   assert.equal(h.signals.at(-1).aborted,true); assert.equal(h.time.count(),0);
-  h.feed.start(); await flush(); late.resolve(task('one','RUNNING')); await flush();
+  const stopped=h.feed.getSnapshot(); h.feed.stop(); assert.equal(h.feed.getSnapshot(),stopped);
+  h.feed.start(); await flush(); assert.equal(h.feed.getSnapshot().polling,false);
+  await h.time.advance(2000); assert.equal(h.feed.getSnapshot().polling,true);
+  late.resolve(task('one','SUCCEEDED')); await flush();
+  assert.equal(h.feed.getSnapshot().tasks[0].status,'RUNNING');
+  assert.equal(h.feed.getSnapshot().polling,true);
+  current.resolve(task('one','SUCCEEDED')); await flush();
+  assert.equal(h.feed.getSnapshot().polling,false);
   assert.equal(h.feed.getSnapshot().tasks[0].status,'SUCCEEDED'); assert.equal(h.time.count(),0); h.feed.stop();
 });
 

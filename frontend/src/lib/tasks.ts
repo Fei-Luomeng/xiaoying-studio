@@ -81,6 +81,7 @@ export function createTaskFeed(options: FeedOptions) {
   const stop = () => {
     active = false; clearTimer(); round = null;
     for (const key of requests.keys()) abort(key);
+    if (snapshot.polling || snapshot.historyLoading) emit({ polling: false, historyLoading: false });
   };
   const loseIdentity = () => {
     stop(); emit({ tasks: [], taskErrors: {}, historyLoading: false, polling: false }); options.onIdentityLost();
